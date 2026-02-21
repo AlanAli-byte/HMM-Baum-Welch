@@ -3,60 +3,50 @@
 ## Student Information
 
 **Name:** Alan Ali
-
 **Register Number:** TCR24CS106
-
 **Course:** Pattern Recognition
 
 ---
 
 ## Project Description
 
-This project presents a complete implementation of the **Baum–Welch algorithm** for training a Hidden Markov Model (HMM).
+This project implements the Baum–Welch algorithm for training a Hidden Markov Model (HMM).
 
-The Baum–Welch algorithm is a special case of the Expectation–Maximization (EM) algorithm used to estimate the parameters of an HMM when only the observation sequence is known.
+Baum–Welch is a special case of the Expectation–Maximization (EM) algorithm used to estimate HMM parameters when only the observation sequence is available.
 
-All mathematical computations are implemented manually in Python without using any external HMM libraries.
+All computations are implemented manually in Python without using external HMM libraries.
 
-An interactive Streamlit-based interface is provided to:
-
-* Input observed sequences
-* Configure model parameters
-* Train the HMM
-* Visualize convergence behavior
-* Display learned state transition diagrams
+The project also includes an interactive Streamlit interface for training and visualization.
 
 ---
 
-## Hidden Markov Model Formulation
+## Hidden Markov Model Definition
 
-A Hidden Markov Model is defined by:
+An HMM is defined by the parameter set:
 
-[
-\lambda = (A, B, \pi)
-]
+```
+λ = (A, B, π)
+```
 
 Where:
 
-* **A** → State Transition Probability Matrix
-* **B** → Emission Probability Matrix
-* **π** → Initial State Distribution
+* **A** = State Transition Probability Matrix
+* **B** = Emission Probability Matrix
+* **π** = Initial State Distribution
 
-The objective of Baum–Welch is to estimate these parameters such that the likelihood of the observed sequence ( P(O \mid \lambda) ) is maximized.
+The goal of Baum–Welch is to estimate these parameters such that the likelihood `P(O | λ)` is maximized.
 
 ---
 
-## Algorithm Implementation Details
-
-The following components are implemented explicitly:
+## Algorithm Components Implemented
 
 ### 1. Forward Algorithm (α)
 
-Computes the probability of partial observation sequences:
+Computes:
 
-[
-\alpha_t(i) = P(O_1, O_2, ..., O_t, q_t = i \mid \lambda)
-]
+```
+α_t(i) = P(O1, O2, ..., Ot, qt = i | λ)
+```
 
 Scaling is applied to prevent numerical underflow.
 
@@ -64,52 +54,53 @@ Scaling is applied to prevent numerical underflow.
 
 ### 2. Backward Algorithm (β)
 
-Computes the probability of the remaining observations:
+Computes:
 
-[
-\beta_t(i) = P(O_{t+1}, ..., O_T \mid q_t = i, \lambda)
-]
-
----
-
-### 3. State Posterior Probability (γ)
-
-[
-\gamma_t(i) = P(q_t = i \mid O, \lambda)
-]
-
-Represents how responsible state *i* is for the observation at time *t*.
+```
+β_t(i) = P(O_{t+1}, ..., OT | qt = i, λ)
+```
 
 ---
 
-### 4. Transition Posterior Probability (ξ)
+### 3. State Responsibility (γ)
 
-[
-\xi_t(i,j) = P(q_t = i, q_{t+1} = j \mid O, \lambda)
-]
+```
+γ_t(i) = P(qt = i | O, λ)
+```
 
-Represents expected transitions from state *i* to *j*.
+Represents how responsible hidden state *i* is for observation at time *t*.
+
+---
+
+### 4. Transition Responsibility (ξ)
+
+```
+ξ_t(i,j) = P(qt = i, qt+1 = j | O, λ)
+```
+
+Represents expected transitions from state *i* to state *j*.
 
 ---
 
 ### 5. Parameter Re-estimation
 
-Parameters are updated as follows:
+Initial distribution:
 
-* Initial distribution:
-  [
-  \pi_i = \gamma_1(i)
-  ]
+```
+π_i = γ_1(i)
+```
 
-* Transition matrix:
-  [
-  a_{ij} = \frac{\sum_{t=1}^{T-1} \xi_t(i,j)}{\sum_{t=1}^{T-1} \gamma_t(i)}
-  ]
+Transition matrix:
 
-* Emission matrix:
-  [
-  b_i(k) = \frac{\sum_{t: O_t = k} \gamma_t(i)}{\sum_{t=1}^{T} \gamma_t(i)}
-  ]
+```
+a_ij = (sum of ξ_t(i,j)) / (sum of γ_t(i))
+```
+
+Emission matrix:
+
+```
+b_i(k) = (sum of γ_t(i) where observation = k) / (sum of γ_t(i))
+```
 
 These updates are repeated until convergence.
 
@@ -117,24 +108,20 @@ These updates are repeated until convergence.
 
 ## Inputs
 
-The program accepts:
+The program allows configuration of:
 
 * Observed state sequence (comma-separated integers)
 * Number of hidden states
-* Maximum training iterations
+* Maximum number of iterations
 * Convergence tolerance
 
-The user can either:
-
-* Provide a manual observation sequence
-  or
-* Generate a synthetic sequence for experimentation
+The user may provide manual input or generate a synthetic sequence.
 
 ---
 
 ## Outputs
 
-After training, the following are displayed:
+After training, the application displays:
 
 * Initial Transition Matrix (A)
 * Final Transition Matrix (A)
@@ -142,22 +129,20 @@ After training, the following are displayed:
 * Final Emission Matrix (B)
 * Initial Distribution (π)
 * Final Distribution (π)
-* Log-Likelihood ( P(O \mid \lambda) )
-* Convergence status
-
-Optional intermediate values (α, β, γ) can also be examined if enabled.
+* Final Log-Likelihood `P(O | λ)`
+* Convergence information
 
 ---
 
 ## Visualization
 
-The application includes:
+The application provides:
 
 * Log-likelihood vs iteration graph
-* State transition diagram of learned hidden states
-* Numerical matrices displayed in tabular format
+* Learned state transition diagram
+* Matrix values in tabular format
 
-The likelihood curve demonstrates monotonic increase until convergence, confirming correct EM implementation.
+The likelihood increases monotonically until convergence, validating correct EM implementation.
 
 ---
 
@@ -176,67 +161,58 @@ The likelihood curve demonstrates monotonic increase until convergence, confirmi
 ```
 HMM-Baum-Welch/
 │
-├── baum_welch.py        # Core algorithm implementation
-├── diagram_generator.py # State transition diagram generator
-├── app.py               # Streamlit interface
-├── requirements.txt     # Required Python packages
-├── README.md            # Documentation
+├── baum_welch.py
+├── diagram_generator.py
+├── app.py
+├── requirements.txt
+├── README.md
 ```
 
 ---
 
 ## How to Run the Project
 
-### 1. Clone the Repository
+### 1. Clone Repository
 
 ```
 git clone https://github.com/AlanAli-byte/HMM-Baum-Welch.git
 cd HMM-Baum-Welch
 ```
 
-### 2. Create Virtual Environment (Recommended)
-
-```
-python -m venv venv
-venv\Scripts\activate
-```
-
-### 3. Install Dependencies
+### 2. Install Dependencies
 
 ```
 pip install -r requirements.txt
 ```
 
-### 4. Install Graphviz
+### 3. Install Graphviz
 
-Download and install Graphviz from:
+Download from:
 
 [https://graphviz.org/download/](https://graphviz.org/download/)
 
-Ensure it is added to system PATH.
+Ensure Graphviz is added to system PATH.
 
-### 5. Run the Application
+### 4. Run Application
 
 ```
 streamlit run app.py
 ```
 
-The application will open automatically in your browser.
-
 ---
 
 ## Important Notes
 
-* The Baum–Welch algorithm is implemented from first principles.
+* The Baum–Welch algorithm is implemented from scratch.
 * No external HMM libraries are used.
-* Scaling is applied in the forward-backward procedure for numerical stability.
-* The log-likelihood increases monotonically across iterations.
-* The repository is public as required by the assignment guidelines.
+* Scaling is applied to prevent numerical instability.
+* Log-likelihood increases across iterations until convergence.
+* Repository is public as required.
 
 ---
 
 ## Conclusion
 
-This project demonstrates a complete and mathematically accurate implementation of the Baum–Welch algorithm for training Hidden Markov Models.
+This project demonstrates a complete implementation of the Baum–Welch algorithm along with visualization tools to understand convergence behavior and learned hidden state transitions.
 
-The interactive interface and visualizations provide insight into how model parameters evolve during iterative optimization.
+---
